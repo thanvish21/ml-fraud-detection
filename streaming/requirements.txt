@@ -1,0 +1,6 @@
+confluent-kafka>=2.3
+psycopg2-binary>=2.9
+requests>=2.31
+numpy>=1.26
+fastapi>=0.110
+uvicorn[standard]>=0.27

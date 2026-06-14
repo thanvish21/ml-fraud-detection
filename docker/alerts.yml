@@ -1,0 +1,21 @@
+groups:
+  - name: fraud-alerts
+    rules:
+      - alert: HighFraudRate
+        expr: fraud_rate_observed > 0.05
+        for: 2m
+        labels: { severity: critical }
+        annotations:
+          summary: "Observed fraud rate exceeds 5%"
+      - alert: ModelDrift
+        expr: fraud_model_drift_alert == 1
+        for: 5m
+        labels: { severity: warning }
+        annotations:
+          summary: "Model drift detected for {{ $labels.model }}"
+      - alert: HighPredictLatency
+        expr: histogram_quantile(0.99, sum(rate(fraud_predict_latency_seconds_bucket[1m])) by (le, model)) > 0.05
+        for: 2m
+        labels: { severity: warning }
+        annotations:
+          summary: "p99 latency >50ms on {{ $labels.model }}"
