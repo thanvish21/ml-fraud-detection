@@ -35,7 +35,7 @@ services:
     environment:
       POSTGRES_DB: fraud
       POSTGRES_USER: fraud
-      POSTGRES_PASSWORD: fraud
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-fraud}
     ports: ["5432:5432"]
     volumes: ["pgdata:/var/lib/postgresql/data"]
     healthcheck:
@@ -65,7 +65,7 @@ services:
     command: uvicorn streaming.stats_api:app --host 0.0.0.0 --port 8001
     ports: ["8001:8001"]
     environment:
-      PG_DSN: "host=postgres dbname=fraud user=fraud password=fraud port=5432"
+      PG_DSN: "host=postgres dbname=fraud user=fraud password=${POSTGRES_PASSWORD:-fraud} port=5432"
     depends_on:
       postgres: { condition: service_healthy }
 
@@ -91,7 +91,7 @@ services:
       KAFKA_TOPIC: transactions
       DLQ_TOPIC: transactions.dlq
       API_URL: http://api:8000/predict
-      PG_DSN: "host=postgres dbname=fraud user=fraud password=fraud port=5432"
+      PG_DSN: "host=postgres dbname=fraud user=fraud password=${POSTGRES_PASSWORD:-fraud} port=5432"
     depends_on:
       kafka: { condition: service_healthy }
       postgres: { condition: service_healthy }
@@ -116,7 +116,7 @@ services:
   grafana:
     image: grafana/grafana-oss:11.2.0
     environment:
-      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
     ports: ["3001:3000"]
     depends_on: [prometheus]
 

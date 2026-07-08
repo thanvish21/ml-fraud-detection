@@ -8,7 +8,9 @@ import psycopg2.extras
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-PG_DSN = os.getenv("PG_DSN", "host=postgres dbname=fraud user=fraud password=fraud port=5432")
+PG_DSN = os.getenv("PG_DSN") or (
+    f"host=postgres dbname=fraud user=fraud password={os.getenv('POSTGRES_PASSWORD', 'fraud')} port=5432"
+)
 app = FastAPI(title="Fraud Stats API")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 

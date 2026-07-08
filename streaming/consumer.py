@@ -16,7 +16,9 @@ TOPIC = os.getenv("KAFKA_TOPIC", "transactions")
 DLQ_TOPIC = os.getenv("DLQ_TOPIC", "transactions.dlq")
 GROUP = os.getenv("KAFKA_GROUP", "fraud-consumer")
 API_URL = os.getenv("API_URL", "http://api:8000/predict")
-PG_DSN = os.getenv("PG_DSN", "host=postgres dbname=fraud user=fraud password=fraud port=5432")
+PG_DSN = os.getenv("PG_DSN") or (
+    f"host=postgres dbname=fraud user=fraud password={os.getenv('POSTGRES_PASSWORD', 'fraud')} port=5432"
+)
 
 INSERT_SQL = """
 INSERT INTO predictions (transaction_id, ts, amount, merchant_category, fraud_probability,

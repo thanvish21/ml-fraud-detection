@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 import time
 import random
+import zlib
 from pathlib import Path
 from typing import Literal
 
@@ -76,9 +77,10 @@ def _record_rate(model: str, label: int):
 def _pick_variant(variant: str, user_hint: str | None) -> str:
     if variant in ("champion", "challenger"):
         return variant
-    # A/B split deterministic on transaction_id hash → 90/10
+    # A/B split deterministic on transaction_id hash → 90/10.
+    # crc32, not hash(): str hash() is salted per-process, breaking determinism across workers.
     if user_hint:
-        return "challenger" if (hash(user_hint) % 10 == 0) else "champion"
+        return "challenger" if (zlib.crc32(user_hint.encode()) % 10 == 0) else "champion"
     return "champion" if random.random() > 0.1 else "challenger"
 
 

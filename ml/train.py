@@ -106,7 +106,7 @@ def main(n_trials: int = 15):
         proba = mdl.predict_proba(X_val)[:, 1]
         metrics["xgboost"] = evaluate("xgboost", y_val, proba)
         mlflow.log_params(best_xgb)
-        mlflow.log_metrics(metrics["xgboost"] | {})
+        mlflow.log_metrics({k: v for k, v in metrics["xgboost"].items() if isinstance(v, float)})
         joblib.dump(mdl, MODELS / "xgboost.joblib")
 
     with mlflow.start_run(run_name="lightgbm"):
@@ -117,7 +117,7 @@ def main(n_trials: int = 15):
         proba = mdl.predict_proba(X_val)[:, 1]
         metrics["lightgbm"] = evaluate("lightgbm", y_val, proba)
         mlflow.log_params(best_lgb)
-        mlflow.log_metrics(metrics["lightgbm"] | {})
+        mlflow.log_metrics({k: v for k, v in metrics["lightgbm"].items() if isinstance(v, float)})
         joblib.dump(mdl, MODELS / "lightgbm.joblib")
 
     with mlflow.start_run(run_name="isolation_forest"):
@@ -142,8 +142,12 @@ def main(n_trials: int = 15):
     joblib.dump(pre, MODELS / "preprocessor.joblib")
     with open(MODELS / "metrics.json", "w") as fh:
         json.dump(metrics, fh, indent=2)
+    # Champion must be a persisted .joblib the registry can load; the weighted-avg
+    # ensemble is evaluation-only and never serialized, so promote the best single model.
+    champion = "lightgbm" if metrics["lightgbm"]["pr_auc"] >= metrics["xgboost"]["pr_auc"] else "xgboost"
+    challenger = "xgboost" if champion == "lightgbm" else "lightgbm"
     with open(MODELS / "version.json", "w") as fh:
-        json.dump({"version": "v1.0.0", "champion": "ensemble", "challenger": "xgboost"}, fh, indent=2)
+        json.dump({"version": "v1.0.0", "champion": champion, "challenger": challenger}, fh, indent=2)
 
     print(f"Saved models -> {MODELS}")
 

@@ -32,7 +32,10 @@ pip install -r ml/requirements.txt
 python ml/generate_data.py
 cd ml && python train.py && python explain.py && cd ..
 
-# 2. Bring up the full stack
+# 2. (optional) Override dev-only default passwords
+cp .env.example .env   # then edit POSTGRES_PASSWORD / GRAFANA_ADMIN_PASSWORD
+
+# 3. Bring up the full stack
 docker compose up -d --build
 ```
 
@@ -44,7 +47,7 @@ Services (after `compose up`):
 | http://localhost:8000/docs   | FastAPI inference docs |
 | http://localhost:8001/health | Stats API |
 | http://localhost:9090        | Prometheus |
-| http://localhost:3001        | Grafana (admin/admin) |
+| http://localhost:3001        | Grafana (admin / `$GRAFANA_ADMIN_PASSWORD`, default `admin`) |
 | http://localhost:5000        | MLflow UI |
 
 ## ML pipeline (`ml/`)
